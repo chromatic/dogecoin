@@ -10,6 +10,7 @@ QT_TS = \
   qt/locale/bitcoin_af.ts \
   qt/locale/bitcoin_af_ZA.ts \
   qt/locale/bitcoin_ar.ts \
+  qt/locale/bitcoin_az.ts \
   qt/locale/bitcoin_be_BY.ts \
   qt/locale/bitcoin_bg_BG.ts \
   qt/locale/bitcoin_bg.ts \
