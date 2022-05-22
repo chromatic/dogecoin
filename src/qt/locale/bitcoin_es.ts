@@ -1330,6 +1330,22 @@
         <source>The supplied proxy address is invalid.</source>
         <translation>La dirección proxy indicada es inválida.</translation>
     </message>
+    <message>
+        <source>Disables some advanced features but all blocks will still be fully validated. Reverting this setting requires re-downloading the entire blockchain. Actual disk usage may be somewhat higher.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Prune &amp;block storage to</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>GB</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Reverting this setting requires re-downloading the entire blockchain.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>OverviewPage</name>
@@ -1442,15 +1458,15 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Who own the private keys own the coins.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>To see ongoing development and contribute, checkout Dogecoin repository on GitHub!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Services that claim to double your dogecoins are always ponzi schemes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Who owns the private keys owns the coins.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1867,12 +1883,8 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished">%1 B</translation>
     </message>
     <message>
-        <source>%1 TB</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>%1 GB</source>
-        <translation type="unfinished">%1 GB</translation>
+        <translation type="obsolete">%1 GB</translation>
     </message>
     <message>
         <source>%1 MB</source>
@@ -1880,7 +1892,11 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>%1 KB</source>
-        <translation type="unfinished">%1 KB</translation>
+        <translation type="obsolete">%1 KB</translation>
+    </message>
+    <message>
+        <source>%1 kB</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
