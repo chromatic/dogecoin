@@ -89,7 +89,23 @@ vector<unsigned char> ParseHex(const char* psz)
 
 vector<unsigned char> ParseHex(const string& str)
 {
-    return ParseHex(str.c_str());
+    vector<unsigned char> vch;
+    auto it = str.begin();
+
+    while (it != str.end() && it + 1 != str.end()) {
+        while (isspace(*it)) {
+            ++it;
+        }
+        auto c1 = HexDigit(*(it++));
+        auto c2 = HexDigit(*(it++));
+
+        if (c1 < 0 || c2 < 0)
+            break;
+
+        vch.push_back(c1 << 4 | c2);
+    }
+
+    return vch;
 }
 
 string EncodeBase64(const unsigned char* pch, size_t len)
