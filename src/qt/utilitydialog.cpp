@@ -50,6 +50,7 @@
 #endif
 
 #if QT_VERSION < 0x050000
+#include <QPageSize>
 #include <QPrinter>
 #include <QPrintDialog>
 #include <QPrintPreviewDialog>
@@ -357,7 +358,7 @@ void PaperWalletDialog::on_printButton_clicked()
 
     // Hardcode these values
     printer.setPageOrientation(QPageLayout::Portrait);
-    printer.setPaperSize(QPrinter::A4);
+    printer.setPageSize(QPageSize(QPageSize::A4));
     printer.setFullPage(true);
 
     QPainter painter;
@@ -369,7 +370,7 @@ void PaperWalletDialog::on_printButton_clicked()
     int walletCount = ui->walletCount->currentIndex() + 1;
     int walletsPerPage = 4;
 
-    int pageHeight = printer.pageRect().height() - PAPER_WALLET_PAGE_MARGIN;
+    int pageHeight = printer.pageLayout().paintRectPixels(QPrinter::HighResolution).height() - PAPER_WALLET_PAGE_MARGIN;
     int walletHeight = ui->paperTemplate->height();
     double computedWalletHeight = 0.9 * pageHeight / walletsPerPage;
     double scale = computedWalletHeight / walletHeight;
