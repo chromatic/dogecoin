@@ -26,6 +26,8 @@
 #include <QDesktopWidget>
 #include <QPainter>
 #include <QRadialGradient>
+#include <QScreen>
+#include <QWindow>
 
 #include <boost/bind/bind.hpp>
 
@@ -131,7 +133,10 @@ SplashScreen::SplashScreen(Qt::WindowFlags f, const NetworkStyle *networkStyle) 
     QRect r(QPoint(), QSize(pixmap.size().width()/devicePixelRatio,pixmap.size().height()/devicePixelRatio));
     resize(r.size());
     setFixedSize(r.size());
-    move(QApplication::desktop()->screenGeometry().center() - r.center());
+    QScreen* screen = window()->windowHandle()->screen();
+    QRect screenSize = screen->availableGeometry();
+
+    move(screenSize.center() - r.center());
 
     subscribeToCoreSignals();
 }
