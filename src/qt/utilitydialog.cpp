@@ -356,7 +356,7 @@ void PaperWalletDialog::on_printButton_clicked()
     }
 
     // Hardcode these values
-    printer.setOrientation(QPrinter::Portrait);
+    printer.setPageOrientation(QPageLayout::Portrait);
     printer.setPaperSize(QPrinter::A4);
     printer.setFullPage(true);
 
