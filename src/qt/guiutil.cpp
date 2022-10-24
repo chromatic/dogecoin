@@ -57,6 +57,7 @@
 #include <QFileDialog>
 #include <QFont>
 #include <QLineEdit>
+#include <QScreen>
 #include <QSettings>
 #include <QTextDocument> // for Qt::mightBeRichText
 #include <QThread>
@@ -867,9 +868,11 @@ void restoreWindowGeometry(const QString& strSetting, const QSize& defaultSize, 
     QSize size = settings.value(strSetting + "Size", defaultSize).toSize();
 
     if (!pos.x() && !pos.y()) {
-        QRect screen = QApplication::desktop()->screenGeometry();
-        pos.setX((screen.width() - size.width()) / 2);
-        pos.setY((screen.height() - size.height()) / 2);
+        // find screen by looking for the midpoint of the parent widget
+        QScreen* screen = QGuiApplication::screenAt(parent->mapToGlobal({parent->width() / 2, 0}));
+        QRect screenSize = screen->availableGeometry();
+        pos.setX((screenSize.width() - size.width()) / 2);
+        pos.setY((screenSize.height() - size.height()) / 2);
     }
 
     parent->resize(size);
