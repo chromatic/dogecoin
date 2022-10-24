@@ -508,7 +508,7 @@ QWidget *ShutdownWindow::showShutdownWindow(BitcoinGUI *window)
         return nullptr;
 
     // Show a simple window indicating shutdown status
-    QWidget *shutdownWindow = new ShutdownWindow();
+    QWidget *shutdownWindow = new ShutdownWindow(window, Qt::Widget);
     shutdownWindow->setWindowTitle(window->windowTitle());
 
     // Center shutdown window at where main window was
