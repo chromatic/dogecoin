@@ -153,6 +153,9 @@ OverviewPage::OverviewPage(const PlatformStyle *platformStyle, QWidget *parent) 
 
 void OverviewPage::UpdateTip()
 {
+    const QDate compiledDate = QDate::fromString(__DATE__, "MMM d yyyy");
+    QDate currentDate = QDate::currentDate();
+
     QStringList tips = {
         tr("Never share your wallet.dat file with anyone"),
         tr("For advanced operations, use the console in 'Help' -> 'Debug Window'"),
@@ -165,6 +168,9 @@ void OverviewPage::UpdateTip()
         tr("To see ongoing development and contribute, check out the Dogecoin Core repository on GitHub"),
         tr("Services that claim to double your dogecoins are always ponzi schemes")
     };
+
+    if (compiledDate.daysTo(currentDate) >= 180)
+        tips.append(tr("This release of Dogecoin core is more than six months old (compiled on %1). Check if there's a new release!").arg(__DATE__));
 
     int i = rand() % tips.length();
     ui->label_tip->setText(tips[i]);
