@@ -15,10 +15,12 @@
 #include "platformstyle.h"
 #include "transactionfilterproxy.h"
 #include "transactiontablemodel.h"
+#include "util.h"
 #include "walletmodel.h"
 
 #include <QAbstractItemDelegate>
 #include <QPainter>
+#include <QPixmap>
 
 #define DECORATION_SIZE 54
 #define NUM_ITEMS 5
@@ -133,6 +135,14 @@ OverviewPage::OverviewPage(const PlatformStyle *platformStyle, QWidget *parent) 
 
     //set the current version
     ui->label_wallet_version_overlay->setText(QString::fromStdString(FormatFullVersion()));
+
+    if (IsArgSet("-walletimage")) {
+        std::string bgImagePath = GetArg("-walletimage", "");
+        QPixmap pic(QString::fromStdString(bgImagePath));
+
+        if (!pic.isNull())
+            ui->label_wallet_bgcoin->setPixmap(pic);
+    }
 
     // Set tip of the day
     UpdateTip();
