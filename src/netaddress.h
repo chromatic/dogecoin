@@ -25,6 +25,7 @@ enum Network
     NET_TOR,
 
     NET_MAX,
+    NET_LOCAL = 255,
 };
 
 /** IP address (IPv6, or IPv4 using mapped IPv6 range (::FFFF:0:0/96)) */
@@ -33,6 +34,9 @@ class CNetAddr
     protected:
         unsigned char ip[16]; // in network byte order
         uint32_t scopeId{0}; // for scoped/link-local ipv6 addresses
+
+    private:
+        std::vector<unsigned char> addressGroupIdentifierReadBytes(Network nClass, int nStartByte, int nBits) const;
 
     public:
         CNetAddr();
@@ -70,7 +74,7 @@ class CNetAddr
         enum Network GetNetwork() const;
         std::string ToString() const;
         std::string ToStringIP() const;
-        unsigned int GetByte(int n) const;
+        unsigned int GetByte(unsigned int n) const;
         uint64_t GetHash() const;
         bool GetInAddr(struct in_addr* pipv4Addr) const;
         std::vector<unsigned char> GetGroup() const;
