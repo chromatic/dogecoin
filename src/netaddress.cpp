@@ -284,8 +284,6 @@ bool operator<(const CNetAddr& a, const CNetAddr& b)
 
 bool CNetAddr::GetInAddr(struct in_addr* pipv4Addr) const
 {
-    if (!IsIPv4())
-        return false;
     memcpy(pipv4Addr, ip+12, 4);
     return true;
 }
