@@ -123,6 +123,7 @@ static std::vector<CAddress> convertSeed6(const std::vector<SeedSpec6> &vSeedsIn
     // Seed nodes are given a random 'last seen time' of between one and two
     // weeks ago.
     const int64_t nOneWeek = 7*24*60*60;
+    int64_t now = GetTime();
     std::vector<CAddress> vSeedsOut;
     vSeedsOut.reserve(vSeedsIn.size());
     for (std::vector<SeedSpec6>::const_iterator i(vSeedsIn.begin()); i != vSeedsIn.end(); ++i)
@@ -130,7 +131,7 @@ static std::vector<CAddress> convertSeed6(const std::vector<SeedSpec6> &vSeedsIn
         struct in6_addr ip;
         memcpy(&ip, i->addr, sizeof(ip));
         CAddress addr(CService(ip, i->port), NODE_NETWORK);
-        addr.nTime = GetTime() - GetRand(nOneWeek) - nOneWeek;
+        addr.nTime = now - GetRand(nOneWeek) - nOneWeek;
         vSeedsOut.push_back(addr);
     }
     return vSeedsOut;
@@ -447,6 +448,7 @@ void CConnman::ClearBanned()
 bool CConnman::IsBanned(CNetAddr ip)
 {
     bool fResult = false;
+    int64_t now = GetTime();
     {
         LOCK(cs_setBanned);
         for (banmap_t::iterator it = setBanned.begin(); it != setBanned.end(); it++)
@@ -454,7 +456,7 @@ bool CConnman::IsBanned(CNetAddr ip)
             CSubNet subNet = (*it).first;
             CBanEntry banEntry = (*it).second;
 
-            if(subNet.Match(ip) && GetTime() < banEntry.nBanUntil)
+            if(subNet.Match(ip) && now < banEntry.nBanUntil)
                 fResult = true;
         }
     }
@@ -464,13 +466,14 @@ bool CConnman::IsBanned(CNetAddr ip)
 bool CConnman::IsBanned(CSubNet subnet)
 {
     bool fResult = false;
+    int64_t now = GetTime();
     {
         LOCK(cs_setBanned);
         banmap_t::iterator i = setBanned.find(subnet);
         if (i != setBanned.end())
         {
             CBanEntry banEntry = (*i).second;
-            if (GetTime() < banEntry.nBanUntil)
+            if (now < banEntry.nBanUntil)
                 fResult = true;
         }
     }
@@ -483,14 +486,15 @@ void CConnman::Ban(const CNetAddr& addr, const BanReason &banReason, int64_t ban
 }
 
 void CConnman::Ban(const CSubNet& subNet, const BanReason &banReason, int64_t bantimeoffset, bool sinceUnixEpoch) {
-    CBanEntry banEntry(GetTime());
+    int64_t now = GetTime();
+    CBanEntry banEntry(now);
     banEntry.banReason = banReason;
     if (bantimeoffset <= 0)
     {
         bantimeoffset = GetArg("-bantime", DEFAULT_MISBEHAVING_BANTIME);
         sinceUnixEpoch = false;
     }
-    banEntry.nBanUntil = (sinceUnixEpoch ? 0 : GetTime() )+bantimeoffset;
+    banEntry.nBanUntil = (sinceUnixEpoch ? 0 : now )+bantimeoffset;
 
     {
         LOCK(cs_setBanned);
@@ -1633,13 +1637,14 @@ void CConnman::ThreadDNSAddressSeed()
             std::vector<CNetAddr> vIPs;
             std::vector<CAddress> vAdd;
             ServiceFlags requiredServiceBits = nRelevantServices;
+            int64_t now = GetTime();
             if (LookupHost(GetDNSHost(seed, &requiredServiceBits), vIPs, 0, true))
             {
                 BOOST_FOREACH(const CNetAddr& ip, vIPs)
                 {
                     int nOneDay = 24*3600;
                     CAddress addr = CAddress(CService(ip, Params().GetDefaultPort()), requiredServiceBits);
-                    addr.nTime = GetTime() - 3*nOneDay - GetRand(4*nOneDay); // use a random age between 3 and 7 days old
+                    addr.nTime = now - 3*nOneDay - GetRand(4*nOneDay); // use a random age between 3 and 7 days old
                     vAdd.push_back(addr);
                     found++;
                 }
@@ -2620,7 +2625,7 @@ uint64_t CConnman::GetMaxOutboundTimeLeftInCycle()
 
     uint64_t cycleEndTime = nMaxOutboundCycleStartTime + nMaxOutboundTimeframe;
     uint64_t now = GetTime();
-    return (cycleEndTime < now) ? 0 : cycleEndTime - GetTime();
+    return (cycleEndTime < now) ? 0 : cycleEndTime - now;
 }
 
 void CConnman::SetMaxOutboundTimeframe(uint64_t timeframe)
