@@ -580,7 +580,7 @@ static bool rest_getutxos(HTTPRequest* req, const std::string& strURIPart)
         objGetUTXOResponse.pushKV("bitmap", bitmapStringRepresentation);
 
         UniValue utxos(UniValue::VARR);
-        BOOST_FOREACH (const CCoin& coin, outs) {
+        for (const CCoin& coin : outs) {
             UniValue utxo(UniValue::VOBJ);
             utxo.pushKV("txvers", (int32_t)coin.nTxVer);
             utxo.pushKV("height", (int32_t)coin.nHeight);

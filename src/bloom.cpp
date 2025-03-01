@@ -14,8 +14,6 @@
 #include <math.h>
 #include <stdlib.h>
 
-#include <boost/foreach.hpp>
-
 #define LN2SQUARED 0.4804530139182014246671025263266649717305529515945455
 #define LN2 0.6931471805599453094172321214581765680755001343602552
 
@@ -179,7 +177,7 @@ bool CBloomFilter::IsRelevantAndUpdate(const CTransaction& tx)
     if (fFound)
         return true;
 
-    BOOST_FOREACH(const CTxIn& txin, tx.vin)
+    for (const CTxIn& txin : tx.vin)
     {
         // Match if the filter contains an outpoint tx spends
         if (contains(txin.prevout))
@@ -307,7 +305,7 @@ void CRollingBloomFilter::reset()
     nTweak = GetRand(std::numeric_limits<unsigned int>::max());
     nEntriesThisGeneration = 0;
     nGeneration = 1;
-    for (std::vector<uint64_t>::iterator it = data.begin(); it != data.end(); it++) {
-        *it = 0;
+    for (uint64_t& value : data) {
+        value = 0;
     }
 }

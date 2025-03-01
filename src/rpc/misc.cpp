@@ -138,7 +138,7 @@ public:
             obj.pushKV("script", GetTxnOutputType(whichType));
             obj.pushKV("hex", HexStr(subscript.begin(), subscript.end()));
             UniValue a(UniValue::VARR);
-            BOOST_FOREACH(const CTxDestination& addr, addresses)
+            for (const CTxDestination& addr : addresses)
                 a.push_back(CBitcoinAddress(addr).ToString());
             obj.pushKV("addresses", a);
             if (whichType == TX_MULTISIG)

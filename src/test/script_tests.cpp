@@ -932,7 +932,7 @@ BOOST_AUTO_TEST_CASE(script_build)
 
     std::string strGen;
 
-    BOOST_FOREACH(TestBuilder& test, tests) {
+    for (TestBuilder& test : tests) {
         test.Test();
         std::string str = JSONPrettyPrint(test.GetJSON());
 #ifndef UPDATE_JSON_TESTS
