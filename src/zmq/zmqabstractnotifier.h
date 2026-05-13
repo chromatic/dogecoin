@@ -7,6 +7,7 @@
 
 #include <util/memory.h>
 
+#include <cstdint>
 #include <memory>
 #include <string>
 
