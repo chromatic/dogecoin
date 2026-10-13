@@ -60,7 +60,7 @@ PASSON_REGEX = re.compile("^--")
 PARALLEL_REGEX = re.compile('^-parallel=')
 
 print_help = False
-run_parallel = 4
+run_parallel = os.cpu_count() or 4
 
 for arg in sys.argv[1:]:
     if arg == "--help" or arg == "-h" or arg == "-?":
@@ -100,87 +100,82 @@ if ENABLE_ZMQ:
         raise
 
 testScripts = [
-    # longest test should go first, to favor running tests in parallel
-    'wallet-hd.py',
-    'walletbackup.py',
-    # vv Tests less than 5m vv
-    'p2p-fullblocktest.py',
-    'fundrawtransaction.py',
-    #'p2p-compactblocks.py',
-    # 'segwit.py',
-    # vv Tests less than 2m vv
-    'auxpow.py',
-    'getauxblock.py',
-    'wallet.py',
-    'wallet-accounts.py',
-    # 'p2p-segwit.py',
-    'wallet-dump.py',
-    'listtransactions.py',
-    'p2p-policy.py',
-    # vv Tests less than 60s vv
+    # Ordered by measured duration, longest first, to favor running tests in parallel
     'p2p-acceptblock.py',
-    'sendheaders.py',
-    'zapwallettxes.py',
-    'importmulti.py',
+    'p2p-fullblocktest.py',
     'mempool_limit.py',
-    'merkle_blocks.py',
-    'receivedby.py',
-    'abandonconflict.py',
-    # 'bip68-112-113-p2p.py',
-    'rawtransactions.py',
-    'reindex.py',
-    'p2p-addr.py',
-    'p2p-tx-download.py',
-    # vv Tests less than 30s vv
-    'walletnotify.py',
-    'p2p_invalid_locator.py',
-    'mempool_resurrect_test.py',
-    'txn_doublespend.py --mineblock',
-    'txn_clone.py',
-    'getchaintips.py',
-    'rest.py',
-    'mempool_spendcoinbase.py',
-    'mempool_reorg.py',
-    'httpbasics.py',
-    'multi_rpc.py',
-    'proxy_test.py',
-    'signrawtransactions.py',
-    'nodehandling.py',
-    'decodescript.py',
-    'blockchain.py',
-    'disablewallet.py',
-    'keypool.py',
-    'p2p-mempool.py',
+    'dustlimits.py',
+    'wallet-hd.py',
     'prioritise_transaction.py',
+    'p2p-policy.py',
+    'wallet.py',
+    'feelimit.py',
+    'walletbackup.py',
+    'p2p-addr.py',
+    'fundrawtransaction.py',
+    'getmocktime.py',
+    'sendheaders.py',
+    'p2p-tx-download.py',
+    'bumpfee.py',
+    'addnode.py',
+    'walletnotify.py',
+    'zapwallettxes.py',
+    'liststucktransactions.py',
+    'wallet-dump.py',
+    'replace-by-fee.py',
+    'p2p-leaktests.py',
+    'keypool.py',
+    'importmulti.py',
+    'abandonconflict.py',
+    'import-rescan.py',
+    'listsinceblock.py',
+    'rescan.py',
+    'wallet-accounts.py',
+    'getblockstats.py',
+    'getchaintips.py',
+    'reindex.py',
+    'paytxfee.py',
+    'rest.py',
+    'merkle_blocks.py',
+    'nodehandling.py',
+    'createauxblock.py',
+    'getauxblock.py',
+    'getblock.py',
+    'listtransactions.py',
+    'rawtransactions.py',
+    'setmaxconnections.py',
+    'receivedby.py',
+    'txn_clone.py',
+    'txn_doublespend.py --mineblock',
+    'preciousblock.py',
+    'auxpow.py',
+    'p2p_invalid_locator.py',
+    'importprunedfunds.py',
+    'blockchain.py',
+    'wallet_create_tx.py',
+    'proxy_test.py',
+    'httpbasics.py',
+    'mempool_reorg.py',
     'invalidblockrequest.py',
+    'p2p-mempool.py',
+    'p2p-getdata.py',
+    'multi_rpc.py',
+    'mempool_spendcoinbase.py',
+    'mempool_resurrect_test.py',
+    'rpcnamedargs.py',
+    'signrawtransactions.py',
+    'signmessages.py',
+    'disablewallet.py',
+    'decodescript.py',
+    'uptime.py',
+    # Disabled tests:
+    # 'p2p-compactblocks.py',
+    # 'segwit.py',
+    # 'p2p-segwit.py',
+    # 'bip68-112-113-p2p.py',
     # 'invalidtxrequest.py',
     # 'p2p-versionbits-warning.py',
-    'preciousblock.py',
-    'importprunedfunds.py',
-    'createauxblock.py',
-    'signmessages.py',
     # 'nulldummy.py',
-    'import-rescan.py',
-    'dustlimits.py',
-    'paytxfee.py',
-    'feelimit.py',
-    'setmaxconnections.py',
-    # While fee bumping should work in Doge, these tests depend on free transactions, which we don't support.
-    # Disable until we can do a full rewrite of the tests (possibly upstream), or revise fee schedule, or something
-    'bumpfee.py',
-    'rpcnamedargs.py',
-    'listsinceblock.py',
-    'p2p-leaktests.py',
-    'replace-by-fee.py',
-    'rescan.py',
-    'wallet_create_tx.py',
-    'liststucktransactions.py',
-    'getblock.py',
-    'getblockstats.py',
-    'addnode.py',
-    'getmocktime.py',
-    'uptime.py',
-    'p2p-getdata.py',
 ]
 if ENABLE_ZMQ:
     testScripts.append('zmq_test.py')
@@ -253,19 +248,21 @@ def runtests():
     time_sum = 0
     time0 = time.time()
     job_queue = RPCTestHandler(run_parallel, test_list, flags)
-    results = BOLD[1] + "%s | %s | %s\n\n" % ("TEST".ljust(max_len_name), "PASSED", "DURATION") + BOLD[0]
+    cpu_sum = 0
+    results = BOLD[1] + "%s | %s | %s | %s\n\n" % ("TEST".ljust(max_len_name), "PASSED", "DURATION", "CPU") + BOLD[0]
     all_passed = True
     for _ in range(len(test_list)):
-        (name, stdout, stderr, passed, duration) = job_queue.get_next()
+        (name, stdout, stderr, passed, duration, cpu) = job_queue.get_next()
         all_passed = all_passed and passed
         time_sum += duration
+        cpu_sum += cpu
 
         print('\n' + BOLD[1] + name + BOLD[0] + ":")
         print('' if passed else stdout + '\n', end='')
         print('' if stderr == '' else 'stderr:\n' + stderr + '\n', end='')
-        results += "%s | %s | %s s\n" % (name.ljust(max_len_name), str(passed).ljust(6), duration)
-        print("Pass: %s%s%s, Duration: %s s\n" % (BOLD[1], passed, BOLD[0], duration))
-    results += BOLD[1] + "\n%s | %s | %s s (accumulated)" % ("ALL".ljust(max_len_name), str(all_passed).ljust(6), time_sum) + BOLD[0]
+        results += "%s | %s | %s s | %.1f s cpu\n" % (name.ljust(max_len_name), str(passed).ljust(6), duration, cpu)
+        print("Pass: %s%s%s, Duration: %s s, CPU: %.1f s\n" % (BOLD[1], passed, BOLD[0], duration, cpu))
+    results += BOLD[1] + "\n%s | %s | %s s (accumulated) | %.1f s cpu" % ("ALL".ljust(max_len_name), str(all_passed).ljust(6), time_sum, cpu_sum) + BOLD[0]
     print(results)
     print("\nRuntime: %s s" % (int(time.time() - time0)))
 
@@ -315,17 +312,22 @@ class RPCTestHandler:
             raise IndexError('pop from empty list')
         while True:
             # Return first proc that finishes
-            time.sleep(.5)
+            time.sleep(.05)
             for j in self.jobs:
                 (name, time0, proc, log_out, log_err) = j
-                if proc.poll() is not None:
+                # wait4() rather than poll() so we also get the CPU time the
+                # test used, including the nodes it started and waited for.
+                pid, status, rusage = os.wait4(proc.pid, os.WNOHANG)
+                if pid != 0:
+                    returncode = os.waitstatus_to_exitcode(status)
+                    cpu = rusage.ru_utime + rusage.ru_stime
                     log_out.seek(0), log_err.seek(0)
                     [stdout, stderr] = [l.read().decode('utf-8') for l in (log_out, log_err)]
                     log_out.close(), log_err.close()
-                    passed = stderr == "" and proc.returncode == 0
+                    passed = stderr == "" and returncode == 0
                     self.num_running -= 1
                     self.jobs.remove(j)
-                    return name, stdout, stderr, passed, int(time.time() - time0)
+                    return name, stdout, stderr, passed, int(time.time() - time0), cpu
             print('.', end='', flush=True)
 
 
