@@ -22,6 +22,7 @@ bool WinShutdownMonitor::nativeEventFilter(const QByteArray &eventType, void *pM
 
        MSG *pMsg = static_cast<MSG *>(pMessage);
 
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
        // Seed OpenSSL PRNG with Windows event data (e.g.  mouse movements and other user interactions)
        if (RAND_event(pMsg->message, pMsg->wParam, pMsg->lParam) == 0) {
             // Warn only once as this is performance-critical
@@ -31,6 +32,7 @@ bool WinShutdownMonitor::nativeEventFilter(const QByteArray &eventType, void *pM
                 warned = true;
             }
        }
+#endif
 
        switch(pMsg->message)
        {

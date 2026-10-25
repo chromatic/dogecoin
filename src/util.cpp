@@ -153,7 +153,7 @@ public:
         // that the config appears to have been loaded and there are no modules/engines available.
         OPENSSL_no_config();
 
-#ifdef WIN32
+#if defined(WIN32) && OPENSSL_VERSION_NUMBER < 0x10100000L
         // Seed OpenSSL PRNG with current contents of the screen
         RAND_screen();
 #endif
