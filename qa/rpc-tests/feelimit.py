@@ -42,12 +42,21 @@ class FeeLimitTest(BitcoinTestFramework):
         outputs = { addr_to : utx['amount'] - Decimal("1.0") }
         rawtx   = self.nodes[0].createrawtransaction(inputs, outputs)
 
-        # Work out how big this transaction would be, then change the output to match
+        # Work out how big this transaction would be, then change the output to
+        # match. Changing the output changes the signature, and a DER signature
+        # can come out a byte or two longer, so re-sign until the fee covers
+        # the transaction that is actually sent.
         tx_size = count_bytes(self.nodes[0].signrawtransaction(rawtx)['hex'])
-        fee = lower_fee_per_kb * (tx_size + 1) / Decimal("1000")
-        outputs = { addr_to : utx['amount'] - fee }
-        rawtx   = self.nodes[0].createrawtransaction(inputs, outputs)
-        signedtx = self.nodes[0].signrawtransaction(rawtx)
+        for _ in range(10):
+            fee = lower_fee_per_kb * (tx_size + 1) / Decimal("1000")
+            outputs = { addr_to : utx['amount'] - fee }
+            rawtx   = self.nodes[0].createrawtransaction(inputs, outputs)
+            signedtx = self.nodes[0].signrawtransaction(rawtx)
+            if count_bytes(signedtx["hex"]) <= tx_size + 1:
+                break
+            tx_size = count_bytes(signedtx["hex"])
+        else:
+            raise AssertionError("could not sign a transaction that fits its fee")
         self.nodes[0].sendrawtransaction(signedtx["hex"])
 
         # Sync all of the nodes
