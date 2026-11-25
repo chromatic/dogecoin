@@ -1863,6 +1863,13 @@ class _Waker(asyncore.dispatcher):
         pass
 
 
+def has_mininode_peers():
+    """True if the socket map holds a peer connection, not just the network
+    thread's own waker. The map can still contain the waker after the network
+    thread has decided to exit, so an empty map is not the right test."""
+    return any(not isinstance(obj, _Waker) for obj in list(mininode_socket_map.values()))
+
+
 class NetworkThread(Thread):
     # How long to block in poll when nothing is happening. Anything queued by
     # another thread interrupts it via wake(), so this is only a safety net.
@@ -1888,7 +1895,7 @@ class NetworkThread(Thread):
         NetworkThread._wake_sock = wake_w
         try:
             # Run while there is any socket other than our own waker.
-            while any(obj is not waker for obj in list(mininode_socket_map.values())):
+            while has_mininode_peers():
                 # We check for whether to disconnect outside of the asyncore
                 # loop to workaround the behavior of asyncore when using
                 # select

@@ -32,6 +32,9 @@ ssl.BN_CTX_new.argtypes = []
 
 SIGN_NONCE_POOL = 32
 
+ssl.BN_clear_free.restype = None
+ssl.BN_clear_free.argtypes = [ctypes.c_void_p]
+
 ssl.ECDSA_sign_setup.restype = ctypes.c_int
 ssl.ECDSA_sign_setup.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.POINTER(ctypes.c_void_p), ctypes.POINTER(ctypes.c_void_p)]
 
@@ -108,12 +111,23 @@ class CECKey(object):
         self._sign_setup = None
 
     def __del__(self):
+        self._free_sign_setup()
         if ssl:
             ssl.EC_KEY_free(self.k)
         self.k = None
 
-    def set_secretbytes(self, secret):
+    def _free_sign_setup(self):
+        """Release the precomputed nonces. ECDSA_sign_ex() only borrows them,
+        so they are ours to free when the key changes or goes away."""
+        pool = getattr(self, '_sign_setup', None)
         self._sign_setup = None
+        if pool and ssl:
+            for kinv, r in pool:
+                ssl.BN_clear_free(kinv)
+                ssl.BN_clear_free(r)
+
+    def set_secretbytes(self, secret):
+        self._free_sign_setup()
         priv_key = ssl.BN_bin2bn(secret, 32, ssl.BN_new())
         group = ssl.EC_KEY_get0_group(self.k)
         pub_key = ssl.EC_POINT_new(group)
@@ -128,7 +142,7 @@ class CECKey(object):
         return self.k
 
     def set_privkey(self, key):
-        self._sign_setup = None
+        self._free_sign_setup()
         self.mb = ctypes.create_string_buffer(key)
         return ssl.d2i_ECPrivateKey(ctypes.byref(self.k), ctypes.byref(ctypes.pointer(self.mb)), len(key))
 
@@ -179,13 +193,16 @@ class CECKey(object):
             # yields different signatures, which tests rely on to make
             # otherwise identical transactions distinct. Reusing nonces
             # leaks the key, so this is for throwaway test keys only.
-            pool = []
+            # Keep the pool on self while filling it, so a failure partway
+            # through still lets _free_sign_setup() release what was made.
+            self._sign_setup = pool = []
             for _ in range(SIGN_NONCE_POOL):
                 kinv = ctypes.c_void_p()
                 r = ctypes.c_void_p()
-                assert 1 == ssl.ECDSA_sign_setup(self.k, None, ctypes.byref(kinv), ctypes.byref(r))
+                if 1 != ssl.ECDSA_sign_setup(self.k, None, ctypes.byref(kinv), ctypes.byref(r)):
+                    self._free_sign_setup()
+                    raise RuntimeError("ECDSA_sign_setup failed")
                 pool.append((kinv, r))
-            self._sign_setup = pool
             self._sign_count = {}
         # The n-th signature of a given hash uses the n-th nonce, so repeated
         # signatures of one hash always differ. Beyond the pool, ask OpenSSL

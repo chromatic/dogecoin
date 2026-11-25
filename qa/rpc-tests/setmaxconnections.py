@@ -64,10 +64,10 @@ class SetMaxConnectionCountTest (BitcoinTestFramework):
         Open count more connections and wait until each has either completed
         its handshake or been closed by the node.
         """
-        # The network thread exits when its socket map is empty, so a batch
-        # that follows a full cleanup needs a new one, started only once the
-        # old one has finished.
-        if self.network_thread is not None and not mininode_socket_map:
+        # The network thread exits once no peer is left in its socket map (its
+        # own waker does not count), so a batch that follows a full cleanup
+        # needs a new one, started only once the old one has finished.
+        if self.network_thread is not None and not has_mininode_peers():
             self.network_thread.join()
 
         new_nodes = [self.create_testnode() for _ in range(count)]
